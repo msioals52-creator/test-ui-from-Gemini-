@@ -25,13 +25,13 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 24
 Title.BackgroundTransparency = 1
 
---عناوين الأزرار 
+--// عناوين الأزرار
 local NL = Instance.new("TextLabel")
-NL.Size = UDim2.new(0, 100, 0, 30)
-NL.Position = UDim2.new(1, -200, 0, 50)
+NL.Size = UDim2.new(0, 110, 0, 20)
+NL.Position = UDim2.new(1, -210, 0, 50)
 NL.TextColor3 = Color3.fromRGB(0, 255, 0)
 NL.Font = Enum.Font.SourceSansBold
-NL.TextSize = 24
+NL.TextSize = 18
 NL.BackgroundTransparency = 1
 NL.Text = "زيادة السرعة"
 NL.Parent = Frame
@@ -60,6 +60,7 @@ circleCorner.Parent = circle
 
 local isOn = false
 local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local player = game.Players.LocalPlayer
 
 toggleButton.MouseButton1Click:Connect(function()
 	isOn = not isOn
@@ -67,7 +68,6 @@ toggleButton.MouseButton1Click:Connect(function()
 	local targetCirclePos
 	local targetBgColor
 
-	local player = game.Players.LocalPlayer
 	local character = player.Character or player.CharacterAdded:Wait()
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 
@@ -89,6 +89,16 @@ toggleButton.MouseButton1Click:Connect(function()
 	TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = targetBgColor}):Play()
 end)
 
+--// إذا مت ورجعت، نرجع السرعة حسب حالة السويتش
+player.CharacterAdded:Connect(function(newCharacter)
+	local newHumanoid = newCharacter:WaitForChild("Humanoid")
+	if isOn then
+		newHumanoid.WalkSpeed = 500
+	else
+		newHumanoid.WalkSpeed = 16
+	end
+end)
+
 --// 5) الحركة
 local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local closeTween = TweenService:Create(Frame, info, {BackgroundTransparency = 1})
@@ -97,6 +107,8 @@ local closeButton = TweenService:Create(toggleButton, info, {BackgroundTranspare
 local openButton = TweenService:Create(toggleButton, info, {BackgroundTransparency = 0})
 local closeCircle = TweenService:Create(circle, info, {BackgroundTransparency = 1})
 local openCircle = TweenService:Create(circle, info, {BackgroundTransparency = 0})
+local closeLabel = TweenService:Create(NL, info, {TextTransparency = 1})
+local openLabel = TweenService:Create(NL, info, {TextTransparency = 0})
 
 --// 6) الحدث: لما ينضغط الزر
 Title.MouseButton1Click:Connect(function()
@@ -104,11 +116,13 @@ Title.MouseButton1Click:Connect(function()
 		closeTween:Play()
 		closeButton:Play()
 		closeCircle:Play()
+		closeLabel:Play()
 		isVisible = false
 	else
 		openTween:Play()
 		openButton:Play()
 		openCircle:Play()
+		openLabel:Play()
 		isVisible = true
 	end
 end)
@@ -117,4 +131,4 @@ end)
 Title.Parent = Frame
 Frame.Parent = ScreenGui
 ScreenGui.Enabled = true
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
