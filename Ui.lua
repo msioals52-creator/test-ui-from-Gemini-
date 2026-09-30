@@ -24,6 +24,18 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 24
 Title.BackgroundTransparency = 1
 
+--عناوين الازرار 
+local NL = Instance.new("TextLabel")
+NL.Size = DIim2.new(0,100,0,30)
+NL.Position = UDim2.new(1,-200,0,50)
+NL.TextColor3 = Color3.fromRGB(0, 255, 0)
+NL.Font = Enum.Font.SourceSansBold
+NL.TextSize = 24
+NL.BackgroundTransparency = 1
+NL.Text = "زيادة سرعة الأهيه"
+
+--^زيادة سرعة
+
 --// ازرار
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 50, 0, 20)
@@ -58,9 +70,12 @@ toggleButton.MouseButton1Click:Connect(function()
 	if isOn then
 		targetCirclePos = UDim2.new(1, -18, 0.5, -8)
 		targetBgColor = Color3.fromRGB(0, 255, 0)
+			game.Players.Local = Player.Character.Humanoid.WalkSpeed = 500
+			
 	else
 		targetCirclePos = UDim2.new(0, 2, 0.5, -8)
 		targetBgColor = Color3.fromRGB(180, 180, 180)
+			game.Players.Local = Player.Character.Humanoid.WalkSpeed = 16
 	end
 
 	TweenService:Create(circle, tweenInfo, {Position = targetCirclePos}):Play()
