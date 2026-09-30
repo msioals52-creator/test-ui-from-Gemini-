@@ -3,125 +3,287 @@
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
 local isVisible = true
 
---// 2) إنشاء العناصر الأساسية
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local Title = Instance.new("TextButton")
+--// 2) الإعدادات (غيّرها إذا احتجت)
+local BOSS_KEYWORD = "scramble" -- جزء من اسم البوس بالإنجليزي، بحروف صغيرة
+local WEAPON_KEYWORD = "sword"  -- جزء من اسم سلاحك بالإنجليزي، بحروف صغيرة
 
---// 3) إعدادات المربع الأسود (زدنا الارتفاع لتتسع للزر الثاني)
-Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Frame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-Frame.Size = UDim2.new(0, 300, 0, 150)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-Frame.Active = true
-Frame.Draggable = true
-
---// 4) إعدادات العنوان (الزر العلوى للتصغير)
-Title.Text = "K7LE"
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.TextColor3 = Color3.fromRGB(0, 255, 0)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 22
-Title.BackgroundTransparency = 1
-
---// ==================== [ الزر الأول: زيادة السرعة ] ====================
-local NL1 = Instance.new("TextLabel")
-NL1.Size = UDim2.new(0, 110, 0, 20)
-NL1.Position = UDim2.new(1, -220, 0, 45)
-NL1.TextColor3 = Color3.fromRGB(0, 255, 0)
-NL1.Font = Enum.Font.SourceSansBold
-NL1.TextSize = 16
-NL1.BackgroundTransparency = 1
-NL1.Text = "زيادة السرعة"
-NL1.Parent = Frame
-
-local speedToggle = Instance.new("TextButton")
-speedToggle.Size = UDim2.new(0, 50, 0, 20)
-speedToggle.Position = UDim2.new(1, -80, 0, 45)
-speedToggle.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
-speedToggle.Text = ""
-speedToggle.Parent = Frame
-
-local corner1 = Instance.new("UICorner")
-corner1.CornerRadius = UDim.new(1, 0)
-corner1.Parent = speedToggle
-
-local circle1 = Instance.new("Frame")
-circle1.Size = UDim2.new(0, 16, 0, 16)
-circle1.Position = UDim2.new(0, 2, 0.5, -8)
-circle1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-circle1.Parent = speedToggle
-
-local cCorner1 = Instance.new("UICorner")
-cCorner1.CornerRadius = UDim.new(1, 0)
-cCorner1.Parent = circle1
-
---// ==================== [ الزر الثاني: هروب البيضة تلقائيًا ] ====================
-local NL2 = Instance.new("TextLabel")
-NL2.Size = UDim2.new(0, 130, 0, 20)
-NL2.Position = UDim2.new(1, -240, 0, 85)
-NL2.TextColor3 = Color3.fromRGB(0, 255, 0)
-NL2.Font = Enum.Font.SourceSansBold
-NL2.TextSize = 16
-NL2.BackgroundTransparency = 1
-NL2.Text = "هروب البيضة"
-NL2.Parent = Frame
-
-local eggToggle = Instance.new("TextButton")
-eggToggle.Size = UDim2.new(0, 50, 0, 20)
-eggToggle.Position = UDim2.new(1, -80, 0, 85)
-eggToggle.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
-eggToggle.Text = ""
-eggToggle.Parent = Frame
-
-local corner2 = Instance.new("UICorner")
-corner2.CornerRadius = UDim.new(1, 0)
-corner2.Parent = eggToggle
-
-local circle2 = Instance.new("Frame")
-circle2.Size = UDim2.new(0, 16, 0, 16)
-circle2.Position = UDim2.new(0, 2, 0.5, -8)
-circle2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-circle2.Parent = eggToggle
-
-local cCorner2 = Instance.new("UICorner")
-cCorner2.CornerRadius = UDim.new(1, 0)
-cCorner2.Parent = circle2
-
---// المتغيرات والـ Tweens
+--// 3) الحالة
 local speedOn = false
 local eggEscapeOn = false
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local lagOn = false
+local bossOn = false
 
---// أحداث زر السرعة
-speedToggle.MouseButton1Click:Connect(function()
-	speedOn = not speedOn
-	local targetCirclePos = speedOn and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-	local targetBgColor = speedOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(180, 180, 180)
-
-	local char = player.Character
-	if char then
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if hum then hum.WalkSpeed = speedOn and 500 or 16 end
-	end
-
-	TweenService:Create(circle1, tweenInfo, {Position = targetCirclePos}):Play()
-	TweenService:Create(speedToggle, tweenInfo, {BackgroundColor3 = targetBgColor}):Play()
+--// ==================== [ منع الطرد بسبب AFK ] ====================
+player.Idled:Connect(function()
+	VirtualUser:CaptureController()
+	VirtualUser:ClickButton2(Vector2.new())
 end)
 
---// أحداث زر هروب البيضة
-eggToggle.MouseButton1Click:Connect(function()
-	eggEscapeOn = not eggEscapeOn
-	local targetCirclePos = eggEscapeOn and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-	local targetBgColor = eggEscapeOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(180, 180, 180)
+--// ==================== [ تقليل اللاق ] ====================
+local backup = setmetatable({}, {__mode = "k"})
+local lagConnection, savedQuality, savedShadows
 
-	TweenService:Create(circle2, tweenInfo, {Position = targetCirclePos}):Play()
-	TweenService:Create(eggToggle, tweenInfo, {BackgroundColor3 = targetBgColor}):Play()
+local function simplify(obj)
+	if obj:IsA("BasePart") then
+		if not backup[obj] then
+			backup[obj] = {Material = obj.Material, CastShadow = obj.CastShadow}
+		end
+		obj.Material = Enum.Material.SmoothPlastic
+		obj.CastShadow = false
+	elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke")
+		or obj:IsA("Fire") or obj:IsA("Sparkles") or obj:IsA("BlurEffect")
+		or obj:IsA("BloomEffect") or obj:IsA("SunRaysEffect") or obj:IsA("DepthOfFieldEffect") then
+		if not backup[obj] then
+			backup[obj] = {Enabled = obj.Enabled}
+		end
+		obj.Enabled = false
+	end
+end
+
+local function setLowGraphics(on)
+	lagOn = on
+	if on then
+		pcall(function()
+			savedQuality = settings().Rendering.QualityLevel
+			settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+		end)
+		savedShadows = Lighting.GlobalShadows
+		Lighting.GlobalShadows = false
+		for _, obj in ipairs(Lighting:GetChildren()) do simplify(obj) end
+
+		task.spawn(function()
+			local count = 0
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if not lagOn then break end
+				simplify(obj)
+				count += 1
+				if count % 500 == 0 then task.wait() end -- حتى ما تتجمد اللعبة
+			end
+		end)
+		lagConnection = workspace.DescendantAdded:Connect(simplify)
+	else
+		if lagConnection then lagConnection:Disconnect() lagConnection = nil end
+		pcall(function()
+			if savedQuality then settings().Rendering.QualityLevel = savedQuality end
+		end)
+		if savedShadows ~= nil then Lighting.GlobalShadows = savedShadows end
+		for obj, data in pairs(backup) do
+			if obj.Parent then
+				if data.Material then
+					obj.Material = data.Material
+					obj.CastShadow = data.CastShadow
+				else
+					obj.Enabled = data.Enabled
+				end
+			end
+		end
+		table.clear(backup)
+	end
+end
+
+--// ==================== [ فارم البوس ] ====================
+local currentBoss, bossPart
+
+local function isAlive(model)
+	if not model or not model.Parent then return false end
+	local hum = model:FindFirstChildOfClass("Humanoid")
+	return hum ~= nil and hum.Health > 0
+end
+
+local function findBoss()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Model") and obj.Name:lower():find(BOSS_KEYWORD, 1, true) and isAlive(obj) then
+			local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+			if part then return obj, part end
+		end
+	end
+end
+
+task.spawn(function()
+	local lastSearch = 0
+	while true do
+		task.wait(0.2)
+		if not bossOn then continue end
+
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart")
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		if not (root and hum and hum.Health > 0) then continue end
+
+		-- يدور على البوس كل ثانيتين بس (حتى ما يسبب لاق)
+		if not isAlive(currentBoss) and os.clock() - lastSearch > 2 then
+			lastSearch = os.clock()
+			currentBoss, bossPart = findBoss()
+		end
+
+		if isAlive(currentBoss) and bossPart and bossPart.Parent then
+			-- تجهيز السلاح
+			local tool = char:FindFirstChildOfClass("Tool")
+			if tool and not tool.Name:lower():find(WEAPON_KEYWORD, 1, true) then tool = nil end
+			if not tool then
+				local backpack = player:FindFirstChildOfClass("Backpack")
+				if backpack then
+					for _, t in ipairs(backpack:GetChildren()) do
+						if t:IsA("Tool") and t.Name:lower():find(WEAPON_KEYWORD, 1, true) then
+							hum:EquipTool(t)
+							tool = t
+							break
+						end
+					end
+				end
+			end
+
+			root.CFrame = bossPart.CFrame * CFrame.new(0, 0, 5) -- يوقف قريب من البوس
+			if tool then tool:Activate() end
+		end
+	end
+end)
+
+--// ==================== [ الواجهة: Liquid Glass ] ====================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.ResetOnSpawn = false -- حتى ما تختفي الواجهة إذا متت
+
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(0, 300, 0, 240)
+Container.Position = UDim2.new(0.5, -150, 0.5, -120)
+Container.BackgroundTransparency = 1
+Container.Active = true
+Container.Draggable = true
+Container.Parent = ScreenGui
+
+local Glass = Instance.new("CanvasGroup")
+Glass.Size = UDim2.new(1, 0, 1, 0)
+Glass.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Glass.BackgroundTransparency = 0
+Glass.Parent = Container
+
+local glassCorner = Instance.new("UICorner")
+glassCorner.CornerRadius = UDim.new(0, 26)
+glassCorner.Parent = Glass
+
+local glassStroke = Instance.new("UIStroke")
+glassStroke.Color = Color3.fromRGB(255, 255, 255)
+glassStroke.Transparency = 0.45
+glassStroke.Thickness = 1.5
+glassStroke.Parent = Glass
+
+local glassGradient = Instance.new("UIGradient")
+glassGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(170, 200, 255))
+glassGradient.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 0.55),
+	NumberSequenceKeypoint.new(1, 0.85),
+})
+glassGradient.Rotation = 45
+glassGradient.Parent = Glass
+
+local Title = Instance.new("TextButton")
+Title.Text = "K7LE"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.Parent = Container
+
+local List = Instance.new("Frame")
+List.Size = UDim2.new(1, -24, 1, -52)
+List.Position = UDim2.new(0, 12, 0, 44)
+List.BackgroundTransparency = 1
+List.Parent = Glass
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 8)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = List
+
+--// دالة تسوي سويتش كامل (بدل ما نكرر الكود لكل زر)
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local ON_COLOR = Color3.fromRGB(52, 199, 89)
+local OFF_COLOR = Color3.fromRGB(120, 120, 128)
+
+local function createToggle(text, order, onChange)
+	local state = false
+
+	local Row = Instance.new("Frame")
+	Row.Size = UDim2.new(1, 0, 0, 40)
+	Row.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Row.BackgroundTransparency = 0.88
+	Row.LayoutOrder = order
+	Row.Parent = List
+
+	local rowCorner = Instance.new("UICorner")
+	rowCorner.CornerRadius = UDim.new(0, 14)
+	rowCorner.Parent = Row
+
+	local Label = Instance.new("TextLabel")
+	Label.Size = UDim2.new(1, -72, 1, 0)
+	Label.Position = UDim2.new(0, 62, 0, 0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Label.Font = Enum.Font.SourceSansSemibold
+	Label.TextSize = 18
+	Label.TextXAlignment = Enum.TextXAlignment.Right
+	Label.Parent = Row
+
+	local Switch = Instance.new("TextButton")
+	Switch.Size = UDim2.new(0, 46, 0, 26)
+	Switch.Position = UDim2.new(0, 10, 0.5, -13)
+	Switch.BackgroundColor3 = OFF_COLOR
+	Switch.Text = ""
+	Switch.AutoButtonColor = false
+	Switch.Parent = Row
+
+	local swCorner = Instance.new("UICorner")
+	swCorner.CornerRadius = UDim.new(1, 0)
+	swCorner.Parent = Switch
+
+	local Knob = Instance.new("Frame")
+	Knob.Size = UDim2.new(0, 22, 0, 22)
+	Knob.Position = UDim2.new(0, 2, 0.5, -11)
+	Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Knob.Parent = Switch
+
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(1, 0)
+	knobCorner.Parent = Knob
+
+	Switch.MouseButton1Click:Connect(function()
+		state = not state
+		TweenService:Create(Knob, tweenInfo, {
+			Position = state and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
+		}):Play()
+		TweenService:Create(Switch, tweenInfo, {
+			BackgroundColor3 = state and ON_COLOR or OFF_COLOR
+		}):Play()
+		onChange(state)
+	end)
+end
+
+--// ==================== [ الأزرار ] ====================
+createToggle("زيادة السرعة", 1, function(on)
+	speedOn = on
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum then hum.WalkSpeed = on and 500 or 16 end
+end)
+
+createToggle("هروب البيضة", 2, function(on)
+	eggEscapeOn = on
+end)
+
+createToggle("تقليل اللاق", 3, function(on)
+	setLowGraphics(on)
+end)
+
+createToggle("فارم البوس", 4, function(on)
+	bossOn = on
 end)
 
 --// إعادة تعيين السرعة عند الموت
@@ -130,9 +292,9 @@ player.CharacterAdded:Connect(function(newCharacter)
 	newHumanoid.WalkSpeed = speedOn and 500 or 16
 end)
 
---// منطق القفز والتخطي عند حمل البيضة (ينفذ بكل إطار سريع)
+--// هروب البيضة (يتوقف أثناء فارم البوس حتى ما يتعارض مع السلاح)
 RunService.RenderStepped:Connect(function()
-	if not eggEscapeOn then return end
+	if not eggEscapeOn or bossOn then return end
 
 	local char = player.Character
 	if char then
@@ -140,36 +302,31 @@ RunService.RenderStepped:Connect(function()
 		local root = char:FindFirstChild("HumanoidRootPart")
 		local tool = char:FindFirstChildOfClass("Tool")
 
-		-- يفحص إذا كان اللاعب يحمل أداة تحوي اسم البيضة أو أي أداة مسكها
 		if tool and root and hum then
-			-- القفز المستمر
 			if hum:GetState() ~= Enum.HumanoidStateType.Jumping then
 				hum:ChangeState(Enum.HumanoidStateType.Jumping)
 			end
-			-- النقل الفوري للأمام 50 خطوة بأجزاء من الثانية
 			root.CFrame = root.CFrame * CFrame.new(0, 0, -50)
 		end
 	end
 end)
 
---// انيميشن إخفاء/إظهار النافذة عند الضغط على العنوان
-local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+--// انيميشن إخفاء/إظهار الواجهة عند الضغط على العنوان
+local fadeInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 Title.MouseButton1Click:Connect(function()
-	local targetTrans = isVisible and 1 or 0
 	isVisible = not isVisible
+	if isVisible then Glass.Visible = true end
 
-	TweenService:Create(Frame, info, {BackgroundTransparency = targetTrans}):Play()
-	TweenService:Create(speedToggle, info, {BackgroundTransparency = targetTrans}):Play()
-	TweenService:Create(circle1, info, {BackgroundTransparency = targetTrans}):Play()
-	TweenService:Create(NL1, info, {TextTransparency = targetTrans}):Play()
-	TweenService:Create(eggToggle, info, {BackgroundTransparency = targetTrans}):Play()
-	TweenService:Create(circle2, info, {BackgroundTransparency = targetTrans}):Play()
-	TweenService:Create(NL2, info, {TextTransparency = targetTrans}):Play()
+	local tween = TweenService:Create(Glass, fadeInfo, {GroupTransparency = isVisible and 0 or 1})
+	tween:Play()
+
+	if not isVisible then
+		tween.Completed:Connect(function()
+			if not isVisible then Glass.Visible = false end
+		end)
+	end
 end)
 
 --// الربط النهائي
-Title.Parent = Frame
-Frame.Parent = ScreenGui
-ScreenGui.Enabled = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
