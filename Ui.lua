@@ -1,6 +1,7 @@
 --// 1) الخدمات
 local TweenService = game:GetService("TweenService")
-local isVisible = true 
+local isVisible = true
+
 --// 2) نسوي العناصر
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
@@ -22,20 +23,56 @@ Title.TextColor3 = Color3.fromRGB(0, 255, 0)         -- نص أخضر
 Title.Font = Enum.Font.SourceSansBold                -- خط سميك
 Title.TextSize = 24
 Title.BackgroundTransparency = 1                     -- خلفية مخفية
---ازرار
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(1, 0, 0, 40)
-button.Position = UDim2.new(0, 0, 0, 50)
-button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-button.TextColor3 = Color3.fromRGB(0, 0, 0)
-button.Text = "زر جديد"
-button.Font = Enum.Font.SourceSansBold
-button.TextSize = 20
-button.Parent = Frame
 
-button.MouseButton1Click:Connect(function()
-	print("انضغط الزر!")
+--// ازرار
+-- 1. إنشاء خلفية السويتش (الزر الرئيسي)
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 80, 0, 40)
+toggleButton.Position = UDim2.new(0, 0, 0, 50)
+toggleButton.BackgroundColor3 = Color3.fromRGB(180, 180, 180) -- لون الإيقاف (رمادي)
+toggleButton.Text = "" -- إزالة النص لتصميم السويتش
+toggleButton.Parent = Frame
+
+-- جعل حواف خلفية السويتش دائرية
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleButton
+
+-- 2. إنشاء الدائرة المتحركة داخل السويتش
+local circle = Instance.new("Frame")
+circle.Size = UDim2.new(0, 32, 0, 32)
+circle.Position = UDim2.new(0, 4, 0.5, -16) -- موقع البدء (يسار)
+circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+circle.Parent = toggleButton
+
+-- جعل الدائرة دائرية الشكل بالكامل
+local circleCorner = Instance.new("UICorner")
+circleCorner.CornerRadius = UDim.new(1, 0)
+circleCorner.Parent = circle
+
+-- 3. برمجة الحركة والتشغيل/الإيقاف
+local isOn = false
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+toggleButton.MouseButton1Click:Connect(function()
+	isOn = not isOn
+
+	local targetCirclePos
+	local targetBgColor
+
+	if isOn then
+		targetCirclePos = UDim2.new(1, -36, 0.5, -16) -- تحريك لليمين
+		targetBgColor = Color3.fromRGB(0, 200, 255)   -- لون التشغيل (أزرق سماوي)
+	else
+		targetCirclePos = UDim2.new(0, 4, 0.5, -16)   -- تحريك لليسار
+		targetBgColor = Color3.fromRGB(180, 180, 180) -- لون الإيقاف (رمادي)
+	end
+
+	-- تطبيق التحريك الناعم للدائرة ولون الخلفية
+	TweenService:Create(circle, tweenInfo, {Position = targetCirclePos}):Play()
+	TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = targetBgColor}):Play()
 end)
+
 --// 5) الحركة
 local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local closeTween = TweenService:Create(Frame, info, {BackgroundTransparency = 1})
