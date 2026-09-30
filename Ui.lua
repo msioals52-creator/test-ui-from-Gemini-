@@ -35,7 +35,7 @@ Title.MouseButton1Click(function()
         else
             Frame.BackgroundTransparency =0
         isVisible = true 
-        end
+        end)
 
 --// 7) الربط (دائماً آخر شي)
 Title.Parent = Frame
