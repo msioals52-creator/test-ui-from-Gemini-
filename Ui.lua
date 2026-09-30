@@ -1,3 +1,4 @@
+--// LocalScript
 --// 1) الخدمات
 local TweenService = game:GetService("TweenService")
 local isVisible = true
@@ -24,19 +25,18 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 24
 Title.BackgroundTransparency = 1
 
---عناوين الازرار 
+--عناوين الأزرار 
 local NL = Instance.new("TextLabel")
-NL.Size = DIim2.new(0,100,0,30)
-NL.Position = UDim2.new(1,-200,0,50)
+NL.Size = UDim2.new(0, 100, 0, 30)
+NL.Position = UDim2.new(1, -200, 0, 50)
 NL.TextColor3 = Color3.fromRGB(0, 255, 0)
 NL.Font = Enum.Font.SourceSansBold
 NL.TextSize = 24
 NL.BackgroundTransparency = 1
-NL.Text = "زيادة سرعة الأهيه"
+NL.Text = "زيادة السرعة"
+NL.Parent = Frame
 
---^زيادة سرعة
-
---// ازرار
+--// أزرار
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 50, 0, 20)
 toggleButton.Position = UDim2.new(1, -90, 0, 50)
@@ -67,15 +67,22 @@ toggleButton.MouseButton1Click:Connect(function()
 	local targetCirclePos
 	local targetBgColor
 
+	local player = game.Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
 	if isOn then
 		targetCirclePos = UDim2.new(1, -18, 0.5, -8)
 		targetBgColor = Color3.fromRGB(0, 255, 0)
-			game.Players.Local = Player.Character.Humanoid.WalkSpeed = 500
-			
+		if humanoid then
+			humanoid.WalkSpeed = 500
+		end
 	else
 		targetCirclePos = UDim2.new(0, 2, 0.5, -8)
 		targetBgColor = Color3.fromRGB(180, 180, 180)
-			game.Players.Local = Player.Character.Humanoid.WalkSpeed = 16
+		if humanoid then
+			humanoid.WalkSpeed = 16
+		end
 	end
 
 	TweenService:Create(circle, tweenInfo, {Position = targetCirclePos}):Play()
