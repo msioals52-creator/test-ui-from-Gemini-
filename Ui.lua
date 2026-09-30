@@ -1,59 +1,75 @@
 local ScreenGui = Instance.new("ScreenGui")
--- نسوي شاشة UI جديدة، هذي الحاوية الكبيرة اللي تحمل كل شي
+-- نسوي شاشة UI جديدة
 
 local Frame = Instance.new("Frame")
--- نسوي مربع (Frame)، هذا الصندوق الأسود اللي يبين بالشاشة
+-- نسوي المربع الأسود
 
-local Title = Instance.new("TextLabel")
--- نسوي نص (TextLabel) نكتب بي العنوان
+local Title = Instance.new("TextButton")
+-- نسوي زر نصي، لازم زر حتى نقدر ننقر عليه
+
+local TweenService = game:GetService("TweenService")
+-- نستدعي خدمة الحركة، الاسم لازم يكون مضبوط بالحرف
+
+local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+-- إعدادات الحركة: نص ثانية، بأسلوب Quad، وتبطأ بالنهاية
+
+local closeTween = TweenService:Create(Frame, info, {BackgroundTransparency = 1})
+-- نجهّز حركة تخلي خلفية المربع تختفي تدريجياً
+
+Title.MouseButton1Click:Connect(function()
+-- لما ينضغط الزر، ينفذ الكود اللي جوّا
+    closeTween:Play()
+    -- يشغّل الحركة، الأقواس مهمة
+end)
+-- نهاية الدالة
 
 Title.Text = "K7LE"
--- الكلمة اللي تنكتب بالنص
+-- الكلمة اللي تنكتب
 
 Title.Size = UDim2.new(1, 0, 0, 40)
--- الحجم: العرض كامل المربع (1 = 100%)، والارتفاع 40 بكسل
+-- عرض المربع كامل وارتفاع 40 بكسل
 
 Title.Position = UDim2.new(0, 0, 0, 0)
--- المكان: أعلى يسار المربع
+-- أعلى يسار المربع
 
 Title.TextColor3 = Color3.fromRGB(0, 255, 0)
--- لون النص أخضر (أحمر 0، أخضر 255، أزرق 0)
+-- لون النص أخضر
 
 Title.Font = Enum.Font.SourceSansBold
--- نوع الخط: سميك (Bold)
+-- خط سميك
 
 Title.TextSize = 24
 -- حجم الخط
 
 Title.BackgroundTransparency = 1
--- الخلفية شفافة تماماً (1 = مخفية، 0 = ظاهرة)
+-- خلفية الزر شفافة
 
 Title.Parent = Frame
--- نحط النص داخل المربع، بدون هذا السطر ما راح يبين
+-- نحط الزر داخل المربع
 
 Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
--- لون خلفية المربع أسود
+-- خلفية سوداء
 
 Frame.BorderColor3 = Color3.fromRGB(0, 255, 0)
--- لون الإطار أخضر
+-- إطار أخضر
 
 Frame.Size = UDim2.new(0, 300, 0, 200)
--- الحجم: عرض 300 بكسل وارتفاع 200 بكسل
+-- 300 عرض و200 ارتفاع
 
 Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
--- المكان: نص الشاشة، ونرجع نص حجم المربع (150 و100) حتى يتوسّط
+-- نص الشاشة
 
 Frame.Active = true
--- لازم تكون true حتى يشتغل السحب
+-- مطلوبة حتى يشتغل السحب
 
 Frame.Draggable = true
--- نقدر نسحب المربع بالماوس أو الاصبع
+-- نقدر نسحب المربع
 
 Frame.Parent = ScreenGui
--- نحط المربع داخل الشاشة (ScreenGui)
+-- نحط المربع داخل الشاشة
 
 ScreenGui.Enabled = true
--- نفعّل الشاشة حتى تظهر
+-- تفعيل الشاشة
 
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
--- نحط الشاشة عند اللاعب، و WaitForChild ينتظر لين تنوجد PlayerGui
+-- نحط الشاشة عند اللاعب
