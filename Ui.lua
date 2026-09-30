@@ -75,7 +75,7 @@ toggleButton.MouseButton1Click:Connect(function()
 		targetCirclePos = UDim2.new(1, -18, 0.5, -8)
 		targetBgColor = Color3.fromRGB(0, 255, 0)
 		if humanoid then
-			humanoid.WalkSpeed = 500
+			humanoid.WalkSpeed = 50000
 		end
 	else
 		targetCirclePos = UDim2.new(0, 2, 0.5, -8)
@@ -93,7 +93,7 @@ end)
 player.CharacterAdded:Connect(function(newCharacter)
 	local newHumanoid = newCharacter:WaitForChild("Humanoid")
 	if isOn then
-		newHumanoid.WalkSpeed = 500
+		newHumanoid.WalkSpeed = 50000
 	else
 		newHumanoid.WalkSpeed = 16
 	end
