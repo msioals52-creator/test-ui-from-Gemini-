@@ -22,20 +22,21 @@ Title.TextColor3 = Color3.fromRGB(0, 255, 0)         -- نص أخضر
 Title.Font = Enum.Font.SourceSansBold                -- خط سميك
 Title.TextSize = 24
 Title.BackgroundTransparency = 1                     -- خلفية مخفية
-
 --// 5) الحركة
 local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local closeTween = TweenService:Create(Frame, info, {BackgroundTransparency = 1})
+local openTween = TweenService:Create(Frame, info, {BackgroundTransparency = 0})
 
 --// 6) الحدث: لما ينضغط الزر
-Title.MouseButton1Click(function()
-        if isVisible then
-            closeTween:Play()
-            isVisible = false 
-        else
-            Frame.BackgroundTransparency =0
-        isVisible = true 
-        end)
+Title.MouseButton1Click:Connect(function()
+	if isVisible then
+		closeTween:Play()
+		isVisible = false
+	else
+		openTween:Play()
+		isVisible = true
+	end
+end)
 
 --// 7) الربط (دائماً آخر شي)
 Title.Parent = Frame
