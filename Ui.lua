@@ -23,9 +23,9 @@ Title.Font = Enum.Font.SourceSansBold                -- خط سميك
 Title.TextSize = 24
 Title.BackgroundTransparency = 1                     -- خلفية مخفية
 --ازرار
-local button = instance.new("TextButton")
+local button = Instance.new("TextButton")
 button.Size = UDim2.new(1,0,0,40)
-butten.Position = UDim2.new(0,0,0,50)
+button.Position = UDim2.new(0,0,0,50)
 button.Parent = frame 
 --// 5) الحركة
 local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
